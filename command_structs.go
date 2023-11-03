@@ -31,9 +31,10 @@ type commandRunData struct {
 	Options []CommandRunOption `json:"options"`
 }
 type CommandRunOption struct {
-	Type  int    `json:"type"`
-	Name  string `json:"name"`
-	Value string `json:"value"`
+	Type    int                `json:"type"`
+	Name    string             `json:"name"`
+	Value   string             `json:"value"`
+	Options []CommandRunOption `json:"options"`
 }
 
 type CommandSearchResponse struct {
