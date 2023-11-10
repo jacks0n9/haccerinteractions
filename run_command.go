@@ -41,7 +41,7 @@ func (hir *haccerInteractionsRunner) GuildChannelRunCommand(c Command, args *[]C
 		if len(words) < 1 {
 			return
 		}
-		if m.Interaction.User.ID == s.State.User.ID && words[0] == c.Name {
+		if m.Interaction.User.ID == s.State.User.ID && words[0] == c.Name && m.Author.ID == c.ApplicationID {
 			commandRespChan <- *m.Message
 			cmdMutex.Unlock()
 		}
