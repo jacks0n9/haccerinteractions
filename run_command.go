@@ -2,6 +2,7 @@ package haccerinteractions
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -36,7 +37,11 @@ func (hir *haccerInteractionsRunner) GuildChannelRunCommand(c Command, args *[]C
 		if m.Interaction == nil {
 			return
 		}
-		if m.Interaction.User.ID == s.State.User.ID && m.Interaction.Name == c.Name {
+		words := strings.Split(m.Interaction.Name, " ")
+		if len(words) < 1 {
+			return
+		}
+		if m.Interaction.User.ID == s.State.User.ID && words[0] == c.Name {
 			commandRespChan <- *m.Message
 			cmdMutex.Unlock()
 		}
