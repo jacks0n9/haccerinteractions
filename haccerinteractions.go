@@ -72,7 +72,7 @@ func (hir haccerInteractionsRunner) GuildChannelComponentRequest(gc GuildChannel
 	case ButtonClickRequestData:
 		componentType = discordgo.ButtonComponent
 	case SelectMenuSelectRequestData:
-		componentType = dataMap["type"].(discordgo.ComponentType)
+		componentType = discordgo.ComponentType(dataMap["type"].(float64))
 	}
 
 	dataMap["component_type"] = componentType
