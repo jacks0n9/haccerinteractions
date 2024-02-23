@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"math/rand"
 	"net/http"
-	"net/url"
 	"sync"
 	"time"
 
@@ -40,21 +39,23 @@ func NewRunner(s *discordgo.Session) haccerInteractionsRunner {
 }
 
 // Get slash commands in a channel. Limit is ignored if application id is set.
-func (hir haccerInteractionsRunner) GuildChannelGetSlashCommands(channelID string, limit int, applicationID string) (*[]Command, error) {
-	payload := url.Values{}
-	payload.Add("type", "1")
-	if applicationID != "" {
-		payload.Add("application_id", applicationID)
-	} else {
-		payload.Add("limit", fmt.Sprint(limit))
-	}
-	response, err := hir.Session.Request(http.MethodGet, fmt.Sprintf(`https://discord.com/api/v9/channels/%s/application-commands/search?%s`, channelID, payload.Encode()), nil)
+func (hir haccerInteractionsRunner) GuildChannelGetSlashCommands(channelID string, applicationID string) (*[]Command, error) {
+	response, err := hir.Session.Request(http.MethodGet, fmt.Sprintf(`https://discord.com/api/v9/channels/%s/application-command-index`, channelID), nil)
+	searchResponse := CommandSearchResponse{}
+	json.Unmarshal(response, &searchResponse)
 	if err != nil {
 		return nil, err
 	}
+	if applicationID!=""{
+		found:=[]Command{}
+		for _,command:=range searchResponse.Commands{
+			if command.ApplicationID==applicationID{
+				found = append(found, command)
+			}
+		}
+		return &found,nil
+	}
 
-	searchResponse := CommandSearchResponse{}
-	json.Unmarshal(response, &searchResponse)
 	return &searchResponse.Commands, nil
 }
 
