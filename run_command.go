@@ -1,8 +1,10 @@
 package haccerinteractions
 
 import (
+	"errors"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -26,14 +28,11 @@ func (hir *haccerInteractionsRunner) GuildChannelRunCommand(c Command, args *[]C
 			Options: *args,
 		},
 	}
-	_, err := hir.Session.Request(http.MethodPost, "https://discord.com/api/v9/interactions", reqData)
-	if err != nil {
-		return nil, err
-	}
+
 	cmdMutex := hir.getCommandMutex(c.Name)
 	cmdMutex.Lock()
 	commandRespChan := make(chan discordgo.Message)
-	hir.Session.AddHandler(func(s *discordgo.Session, m *discordgo.MessageCreate) {
+	deleteHand := hir.Session.AddHandler(func(s *discordgo.Session, m *discordgo.MessageCreate) {
 		if m.Interaction == nil {
 			return
 		}
@@ -46,6 +45,21 @@ func (hir *haccerInteractionsRunner) GuildChannelRunCommand(c Command, args *[]C
 			cmdMutex.Unlock()
 		}
 	})
-	cmdRespMsg := <-commandRespChan
-	return &cmdRespMsg, nil
+	_, err := hir.Session.Request(http.MethodPost, "https://discord.com/api/v9/interactions", reqData)
+	if err != nil {
+		return nil, err
+	}
+	timer := time.NewTimer(time.Second * 30)
+	select {
+	case cmdRespMsg := <-commandRespChan:
+		{
+			deleteHand()
+			return &cmdRespMsg, nil
+		}
+	case <-timer.C:
+		{
+			deleteHand()
+			return nil, errors.New("timeout looking for response")
+		}
+	}
 }
