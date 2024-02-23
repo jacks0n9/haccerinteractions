@@ -39,8 +39,8 @@ func NewRunner(s *discordgo.Session) haccerInteractionsRunner {
 }
 
 // Get slash commands in a channel. Limit is ignored if application id is set.
-func (hir haccerInteractionsRunner) GuildChannelGetSlashCommands(channelID string, applicationID string) (*[]Command, error) {
-	response, err := hir.Session.Request(http.MethodGet, fmt.Sprintf(`https://discord.com/api/v9/channels/%s/application-command-index`, channelID), nil)
+func (hir haccerInteractionsRunner) GuildChannelGetSlashCommands(guildID string, applicationID string) (*[]Command, error) {
+	response, err := hir.Session.Request(http.MethodGet, fmt.Sprintf(`https://discord.com/api/v9/guilds/%s/application-command-index`, guildID), nil)
 	searchResponse := CommandSearchResponse{}
 	json.Unmarshal(response, &searchResponse)
 	if err != nil {
